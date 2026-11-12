@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Sound effects in fights (issue #8): after the opening movie had played, or been skipped, fights had only
+  the music. The game waits a set number of reads for its sound driver to take a request and then turns
+  effects off for good; the machine answered those reads faster than a Saturn, so the wait ran out. Reads of
+  the sound chip now take as long as on the hardware. Toolkit at satrecomp 2086530.
+
 ## 0.1.0-beta.3
 
 - Unlock everything (a cheat on the Features page): every character, Mr. Meat and Palm Tree among them, every
