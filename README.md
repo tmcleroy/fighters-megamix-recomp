@@ -1,5 +1,7 @@
 # Fighters Megamix Recomp
 
+**[Join me on Discord](https://discord.gg/FSC9GZ6nm)**
+
 An unofficial native PC port of *Fighters Megamix* (Sega AM2, Sega Saturn, 1997) for macOS, Linux, SteamOS and
 Windows, made by static recompilation on [satrecomp](https://github.com/tmcleroy/satrecomp), the toolkit made for
 the Fighting Vipers port.
