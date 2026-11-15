@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Music carries on between rounds (an option on the Game page, on in the Enhanced preset): the stage's music
+  plays through the whole fight instead of starting again at every round. Toolkit at satrecomp bfa0763.
+
 ## 0.1.0-beta.4
 
 - Sound effects in fights (issue #8): after the opening movie had played, or been skipped, fights had only
