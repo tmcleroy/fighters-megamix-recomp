@@ -60,6 +60,9 @@ void RegisterUnlocks() {
 void RegisterGame() {
     RegisterShared();
     RegisterUnlocks();
+    // The stage's music is asked for again at every round (CdPlay of the track already playing); the option
+    // lets it play on through the fight
+    shared::MusicCarriesOn();
     // Widescreen: the stages' panels (the cages, fences and walls) are listed by four of the engine's routines,
     // each with its own copy of a limit on how far off the picture's middle a panel may be (the toolkit's
     // shared::WidenAm2PanelLimits): two shaped as in Fighting Vipers (the limit loaded at 0x06020BC4 and
