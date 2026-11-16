@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Export pictures (in-game menu): the 30 ending pictures as JPEG files, and with the Japanese disc beside yours
+- Export pictures (in-game menu, Game → Pictures): the 30 ending pictures as JPEG files, and with the Japanese disc beside yours
   (Fighters Megamix (Japan), found by the launcher) its four original ending pictures that the American release
   changed and the 13 bonus pictures from its OMAKE archive; to the pictures folder in your files, which Show pictures
   folder opens. Toolkit at satrecomp (Export pictures).
