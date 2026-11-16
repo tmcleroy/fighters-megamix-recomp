@@ -7,7 +7,7 @@
   twelve, as the arcade game has them); your own music files, named after the songs, play in place of any.
   `songs.txt` in the folder says what plays for each song. [docs/SOUNDTRACK.md](docs/SOUNDTRACK.md).
 - Save states made by earlier versions can no longer be loaded (the toolkit's save states now keep the music's place).
-- Toolkit at satrecomp 198fa0a.
+- Toolkit at satrecomp 4955f7c.
 
 ## 0.1.0-beta.5
 
