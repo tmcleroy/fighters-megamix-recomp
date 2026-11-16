@@ -126,9 +126,12 @@ static void RegisterSongs() {
     };
 }
 
+void RegisterPictures(); // pictures.cpp
+
 void RegisterGame() {
     RegisterShared();
     RegisterSongs();
+    RegisterPictures();
     RegisterUnlocks();
     // The stage's music is asked for again at every round (CdPlay of the track already playing); the option
     // lets it play on through the fight
