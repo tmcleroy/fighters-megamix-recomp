@@ -2,11 +2,14 @@
 
 ## Unreleased
 
+## 0.1.0-beta.5
+
 - The winner's close-up after a fight (issue #13): the camera looked too high, the winner's head at the
   bottom of the screen. The game draws that shot in double interlace (twice the lines), which the GPU renderer
   drew at twice its height; it is drawn at its height now, as the software renderer and the Saturn draw it.
 - Music carries on between rounds (an option on the Game page, on in the Enhanced preset): the stage's music
-  plays through the whole fight instead of starting again at every round. Toolkit at satrecomp bfa0763.
+  plays through the whole fight instead of starting again at every round.
+- Toolkit at satrecomp 433f324.
 
 ## 0.1.0-beta.4
 
