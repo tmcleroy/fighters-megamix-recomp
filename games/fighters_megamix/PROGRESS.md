@@ -88,6 +88,27 @@ of the file being loaded 0x060948F0, its error byte 0x060948F4; the peripheral l
   The cheat "unlock_all" raises these (satrecomp `Game::saveUnlocks`); checked: character select shows all
   32, and the save file written is the same byte for byte as without it (arcade_fight, 2,600 frames).
 
+## The music (2026-11-16)
+
+- Tracks 2-42 are the game's music in the order of its own list of names (in high RAM at 0x0603DCD8 going down:
+  YOU WIN 1 .. 4, YOU LOSE, CONTINUE, SELECTOR, LAST WAVE, AB2 CITY202, FV BAHN .. FV B.M., VF1 SARAH, KAGE, DURAL,
+  VF2 LAU .. VF2 CHICAGO, VF3 JEFFRY, VF3 ADVERTISE, KIDS AKIRA, SONIC STAGE1/2, VIRTUA CITY, ROLLING START, RENT A
+  HERO); each track's length fits its name. `src/game.cpp` RegisterSongs.
+- Play-track routine 0x0602DBAC (r4 first track, r5 last, r6 mode; calls the CD library's CdPlay). The stage's music
+  is chosen at 0x0602DC98: the stage number at 0x060E1005, times 8, into the table at 0x06082024, whose first
+  halfword is the track (33 stages; stage 30 shares track 11 with stage 0).
+- Fighting Vipers' discs have the same recordings of the Vipers' stage music, longer: Megamix tracks 11-19 are the
+  US disc's (MK-81041) tracks 7-15 and the Japanese disc's (GS-9101) 9-17, the same from the start (found by
+  cross-correlating the tracks: 0.8-0.97 at the same offsets). Megamix's are cut at 78-94 seconds, the Vipers' run
+  141-176.
+- Virtua Fighter 2's discs have the VF2 stages' arcade music, the same recordings at full length (138-217 s; here
+  79): Megamix 23-34 (Lau, Sarah, Shun, Pai, Lion, Jeffry, Kage, Jacky, Wolf, Akira, Dural, Chicago) are VF2 USA
+  (MK-81014) tracks 28, 21, 32, 22, 23, 24, 25, 26, 29, 31, 27, 30 (correlation 0.8-1.0; VF2's start about 2 s
+  sooner). Japan, Europe and Korea have the same track lengths (the archive's file sizes), so the disc is known by
+  its header's title. VF2's tracks 2-13 (77-100 s) matched nothing here (its own arrangements, by the look of it).
+  Megamix's VF1, VF3, Sonic, Kids and other tracks are on neither disc.
+- `SATRECOMP_LOG_MUSIC=1` prints every track asked for.
+
 ## Open problems
 
 None known in what has been run. The SCU DSP is used only by the real BIOS's start-up (48,925 instructions),

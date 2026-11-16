@@ -9,7 +9,7 @@ The **first page** has your disc image (drop its `.cue` file on the window, or c
 port is made from (USA, `MK-81073`, V1.004) and remembers where it is; it never copies, moves or changes it. On
 SteamOS, **Add to Steam** puts the game in Game Mode.
 
-The **Features** page has run-ahead, the [picture's options](PICTURE.md) and a cheat; a feature changed in the in-game
+The **Features** page has run-ahead, the [picture's options](PICTURE.md), a [custom soundtrack](SOUNDTRACK.md) and a cheat; a feature changed in the in-game
 menu is kept there too.
 
 ### Unlock everything

@@ -57,10 +57,80 @@ void RegisterUnlocks() {
 
 } // namespace
 
+// The disc's music, tracks 2 to 42, by the names the game's own list of them gives (beside the stages' music in its
+// table at 0x06082024: a stage's track is the first halfword of its 8-byte entry, by the stage at 0x060E1005),
+// for a custom soundtrack's files (the toolkit's port/soundtrack.h); and the other discs that have some of it
+static void RegisterSongs() {
+    TheGame().songs = {
+        {2, "you_win_1", "Winner's fanfare 1"},
+        {3, "you_win_2", "Winner's fanfare 2"},
+        {4, "you_win_3", "Winner's fanfare 3"},
+        {5, "you_win_4", "Winner's fanfare 4"},
+        {6, "you_lose", "Loser's tune"},
+        {7, "continue", "Continue"},
+        {8, "selector", "Character select"},
+        {9, "last_wave", "Last Wave (Out Run)"},
+        {10, "ab2_city202", "After Burner II's City 202"},
+        {11, "fv_bahn", "Fighting Vipers, Bahn"},
+        {12, "fv_grace", "Fighting Vipers, Grace"},
+        {13, "fv_picky", "Fighting Vipers, Picky"},
+        {14, "fv_tokio", "Fighting Vipers, Tokio"},
+        {15, "fv_sanman", "Fighting Vipers, Sanman"},
+        {16, "fv_candy", "Fighting Vipers, Candy"},
+        {17, "fv_raxel", "Fighting Vipers, Raxel"},
+        {18, "fv_jane", "Fighting Vipers, Jane"},
+        {19, "fv_bm", "Fighting Vipers, B.M."},
+        {20, "vf1_sarah", "Virtua Fighter, Sarah"},
+        {21, "vf1_kage", "Virtua Fighter, Kage"},
+        {22, "vf1_dural", "Virtua Fighter, Dural"},
+        {23, "vf2_lau", "Virtua Fighter 2, Lau"},
+        {24, "vf2_sarah", "Virtua Fighter 2, Sarah"},
+        {25, "vf2_shun", "Virtua Fighter 2, Shun"},
+        {26, "vf2_pai", "Virtua Fighter 2, Pai"},
+        {27, "vf2_lion", "Virtua Fighter 2, Lion"},
+        {28, "vf2_jeffry", "Virtua Fighter 2, Jeffry"},
+        {29, "vf2_kage", "Virtua Fighter 2, Kage"},
+        {30, "vf2_jacky", "Virtua Fighter 2, Jacky"},
+        {31, "vf2_wolf", "Virtua Fighter 2, Wolf"},
+        {32, "vf2_akira", "Virtua Fighter 2, Akira"},
+        {33, "vf2_dural", "Virtua Fighter 2, Dural"},
+        {34, "vf2_chicago", "Virtua Fighter 2, Chicago"},
+        {35, "vf3_jeffry", "Virtua Fighter 3, Jeffry"},
+        {36, "vf3_advertise", "Virtua Fighter 3 advertisement"},
+        {37, "kids_akira", "Kids Akira"},
+        {38, "sonic_stage1", "Sonic the Fighters, stage 1"},
+        {39, "sonic_stage2", "Sonic the Fighters, stage 2"},
+        {40, "virtua_city", "Virtua City"},
+        {41, "rolling_start", "Rolling Start"},
+        {42, "rent_a_hero", "Rent-A-Hero"},
+    };
+    // Other games' discs with some of this music, the same recordings at full length (found by cross-correlating
+    // the tracks, PROGRESS.md). Fighting Vipers' have the Vipers' stage music (141-176 seconds; here 78-94):
+    // Megamix's tracks 11-19 are the US disc's 7-15 and the Japanese disc's 9-17. Virtua Fighter 2's have the arcade
+    // game's stage music (138-217 seconds; here 79): Megamix's tracks 23-34 are its tracks 21-32, in another order,
+    // on every release of it (the tracks' lengths are the same).
+    std::vector<std::pair<int, int>> vipersUs, vipersJapan;
+    for (int track = 11; track <= 19; track++) {
+        vipersUs.push_back({track, track - 4});
+        vipersJapan.push_back({track, track - 2});
+    }
+    const std::vector<std::pair<int, int>> vf2 = {
+        {23, 28}, {24, 21}, {25, 32}, {26, 22}, {27, 23}, {28, 24}, // Lau, Sarah, Shun, Pai, Lion, Jeffry
+        {29, 25}, {30, 26}, {31, 29}, {32, 31}, {33, 27}, {34, 30}, // Kage, Jacky, Wolf, Akira, Dural, Chicago
+    };
+    const char *vipersWhat = "the Vipers' stage music at full length";
+    TheGame().songDiscs = {
+        {"MK-81041", nullptr, "Fighting Vipers (USA, Europe)", vipersWhat, vipersUs},
+        {"GS-9101", nullptr, "Fighting Vipers (Japan)", vipersWhat, vipersJapan},
+        {nullptr, "VIRTUA FIGHTER 2", "Virtua Fighter 2", "the Virtua Fighter 2 stages' arcade music at full length", vf2},
+    };
+}
+
 void RegisterPictures(); // pictures.cpp
 
 void RegisterGame() {
     RegisterShared();
+    RegisterSongs();
     RegisterPictures();
     RegisterUnlocks();
     // The stage's music is asked for again at every round (CdPlay of the track already playing); the option
