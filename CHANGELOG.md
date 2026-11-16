@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.0-beta.5
+
 - A custom soundtrack (the Features page, under Sound; issue #17): a *Fighting Vipers* or *Virtua Fighter 2* Saturn
   disc image put in the soundtrack folder gives their stages their full-length music (the Vipers' nine, VF2's
   twelve, as the arcade game has them); your own music files, named after the songs, play in place of any.
@@ -11,16 +13,13 @@
   (Fighters Megamix (Japan), found by the launcher) its four original ending pictures that the American release
   changed and the 13 bonus pictures from its OMAKE archive; to the pictures folder in your files, which Show pictures
   folder opens.
-- Toolkit at satrecomp 2ab6611.
-
-## 0.1.0-beta.5
-
 - The winner's close-up after a fight (issue #13): the camera looked too high, the winner's head at the
   bottom of the screen. The game draws that shot in double interlace (twice the lines), which the GPU renderer
   drew at twice its height; it is drawn at its height now, as the software renderer and the Saturn draw it.
 - Music carries on between rounds (an option on the Game page, on in the Enhanced preset): the stage's music
   plays through the whole fight instead of starting again at every round.
-- Toolkit at satrecomp 433f324.
+- Reset game at the bottom of the in-game menu: the game starts again as when switched on; your saves are kept.
+- Toolkit at satrecomp 2ab6611.
 
 ## 0.1.0-beta.4
 
