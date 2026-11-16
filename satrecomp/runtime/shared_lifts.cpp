@@ -58,6 +58,7 @@ struct OpenFile {
     bool open = false;
 };
 std::vector<OpenFile> g_files;
+bool (*g_onlyLooks)(Guest &g) = nullptr; // (PollOnlyLooks)
 
 OpenFile *FileOf(uint32_t handle) {
     const uint32_t index = handle - kHandleBase;
@@ -128,7 +129,10 @@ bool GfsPoll(Guest &g) {
     uint32_t state = kIdle;
     if (file && file->open) {
         state = file->state;
-        if (state == kComplete) {
+        // (a "complete" is given once, and the file is done with; but not to a routine that only looks, which
+        // would take it from the one waiting for it: PollOnlyLooks)
+        const bool looks = g_onlyLooks && g_onlyLooks(g);
+        if (state == kComplete && !looks) {
             *file = OpenFile{};
         }
     }
@@ -172,6 +176,11 @@ bool CdPlay(Guest &g) {
     const int startTrack = g.Read8(what + 4), endTrack = g.Read8(what + 12);
     const uint8_t mode = g.Read8(what + 16);
     const int lastTrack = endKind == kPosTrack ? endTrack : startTrack;
+    // (SATRECOMP_LOG_MUSIC=1: each track the game asks for, for naming a game's songs)
+    static const bool log = getenv("SATRECOMP_LOG_MUSIC") != nullptr;
+    if (log && startKind == kPosTrack) {
+        fprintf(stderr, "music: track %d-%d mode %02X (asked from %08X)\n", startTrack, lastTrack, mode, g.PR());
+    }
     if (startKind == kPosTrack && music::IsAudioTrack(startTrack) && satrecomp::FeatureOn(kMusicCarriesOn) &&
         music::IsPlaying(startTrack, lastTrack)) {
         // (asked for what is playing already, at a new round: it goes on)
@@ -452,6 +461,10 @@ void ReportPer() {
 } // namespace
 
 namespace satrecomp::shared {
+
+void PollOnlyLooks(bool (*onlyLooks)(Guest &g)) {
+    g_onlyLooks = onlyLooks;
+}
 
 void MusicCarriesOn() {
     TheGame().features.push_back({kMusicCarriesOn, "Game", "Music carries on between rounds",

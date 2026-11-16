@@ -56,6 +56,7 @@ struct SaveField {
         kAtLeast, // a count, at least this
     } kind;
     uint32_t value;
+    const char *needs = nullptr; // another feature that must be on too for this field (nullptr: none)
 };
 struct SaveUnlocks {
     const char *feature = nullptr; // the cheat's feature (FeatureOn)
@@ -63,14 +64,46 @@ struct SaveUnlocks {
     std::vector<SaveField> fields;
 };
 
+// A page of the in-game menu with more to it than a category's name: one under another page (reached from that
+// page's, not from the first), or one at the head of the first page (parent ""), as the other ports' "Alternative
+// modes" with "Training mode" under it and "Dummy" under that. A category's features are on the page of its name.
+struct Page {
+    const char *name;
+    const char *parent = "";       // the page it is under ("": the first page, among the rows at its head)
+    const char *description = "";  // what its row says ("": the menu's own words)
+};
+
+// A piece of the game's music: one of its disc's audio tracks, by the name a custom soundtrack's file for it goes by
+// (port/soundtrack.h: "vf2_akira.flac") and what it is
+struct Song {
+    int track;
+    const char *name;
+    const char *title;
+};
+
+// Another disc whose audio tracks hold some of the game's music (as recorded for another game, often longer): when
+// a custom soundtrack's soundtrack.ini names one (disc = ...), its tracks play for those songs, unless the folder has
+// music of its own for them
+struct SongDisc {
+    const char *product;                     // its product number, as its header gives it ("MK-81041")
+    std::vector<std::pair<int, int>> tracks; // this game's track, and that disc's with the same music
+};
+
 struct Game {
     std::vector<Feature> features;
+    // The disc's music, for a custom soundtrack (port/soundtrack.h); none: its files go by the tracks' numbers alone
+    std::vector<Song> songs;
+    std::vector<SongDisc> songDiscs;
+    std::vector<Page> pages;
     // With saveUnlocks.feature on, the backup library (hle_bios.cpp) gives the game its save file with these
     // fields raised, and takes out again what it added when the game writes the file: the game sees all it
     // unlocks by them, and the file keeps what the player has done (a count goes on from the player's own). It
     // takes effect when the game next reads the file (at its start, or a reset).
     SaveUnlocks saveUnlocks;
     std::vector<WideSplit> wideSplits;
+    // Whether wideSplits apply to the frame about to run (the screen they were made for is up; a layer's same rows
+    // on another screen hold something else). Not given: always.
+    bool (*wideSplitsOn)() = nullptr;
     void (*frame)() = nullptr;                                     // after every frame the game ran
     void (*state)(Archive &ar) = nullptr;                          // the game sources' own state, for save states
     // A training session is on (the game's own idea of one): the training aids (kFeatureTraining) work only

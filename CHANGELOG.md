@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- A custom soundtrack (the Features page, under Sound; issue #17): your own music files, named after the songs
+  the game lists in `songs.txt`, or tracks of another disc, play in place of the disc's short music. Naming
+  Fighting Vipers' disc (USA or Japan) in `soundtrack.ini` gives the nine Vipers stages their full-length music.
+  [docs/SOUNDTRACK.md](docs/SOUNDTRACK.md).
+- Save states made by earlier versions can no longer be loaded (the toolkit's save states now keep the music's place).
+- Toolkit at satrecomp 50e4636.
+
 ## 0.1.0-beta.5
 
 - The winner's close-up after a fight (issue #13): the camera looked too high, the winner's head at the

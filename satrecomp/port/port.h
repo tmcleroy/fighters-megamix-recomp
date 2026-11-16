@@ -7,6 +7,7 @@
 
 #include "disc_files.h"
 #include "menu.h"
+#include "soundtrack.h"
 
 #include <atomic>
 #include <cstdint>
@@ -49,6 +50,8 @@ enum PadButton : uint16_t {
 struct Options {
     std::string biosPath;
     std::string discPath;
+    std::string extraDiscPath; // another disc of the game: files not on discPath are read from it (optional)
+    std::string soundtrack;   // a custom soundtrack's folder (soundtrack.h; none: "soundtrack" beside settings.ini)
     std::string backupPath;   // internal backup memory image (created when missing)
     std::string moviePlay;    // input movie to replay
     std::string movieRecord;  // input movie to write
@@ -113,6 +116,12 @@ struct Port {
     bool temporaryBackup = false;
     uint64_t audioHash = 0xcbf29ce484222325ull; // of every sound sample so far
     DiscFiles discFiles;
+    DiscFiles extraDiscFiles; // (--extra-disc: open when one was given and could be read)
+    bool haveExtraDisc = false;
+    Soundtrack soundtrack; // (a custom soundtrack: soundtrack.h)
+    void OpenSoundtrack();
+    bool OpenDiscFiles();
+    void SetWideSplitsOn();
     satrecomp::video::YmirAdapter *videoAdapter = nullptr; // (owned by the video hardware)
     satrecomp::video::Renderer *videoRenderer = nullptr;   // (the adapter's)
     // Drawing by the GPU (video/gpu.h), when that is how the picture is made
@@ -154,6 +163,10 @@ struct Port {
     bool LoadStateData(const std::vector<uint8_t> &data, std::string &error);
     // The reset point: a state kept in memory to go back to at a press, for practising a situation
     std::vector<uint8_t> resetPoint;
+    // The game as it was switched on (a state taken before its first frame): the menu's Reset game goes back to
+    // it. The save memory is not part of a state, so the player's saves stay as they are.
+    std::vector<uint8_t> powerOn;
+    bool ResetGame(std::string &error);
     bool SetResetPoint(std::string &error);
     bool GoToResetPoint(std::string &error);
     std::string resetTest; // tests: "SET:GO": the reset point set at one frame and gone back to at another

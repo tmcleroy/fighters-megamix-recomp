@@ -35,6 +35,8 @@ share (file loading, CD music, the controllers) are replaced by the same C++ in 
 
 ## Everything else
 
+- **A custom soundtrack**: your own music files, or Fighting Vipers' full-length stage music from its disc, in place
+  of the disc's short loops ([more](docs/SOUNDTRACK.md)).
 - **Save states**: nine slots, from the menu or F5 / F9 ([keys](docs/LAUNCHER.md#keys-while-playing)).
 - **Run-ahead**: what you press seen a frame or two sooner, the game running exactly as without it
   ([more](docs/LAUNCHER.md#run-ahead)).

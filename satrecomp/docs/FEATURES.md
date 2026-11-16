@@ -28,6 +28,15 @@ games' features handed over.
 Test hook: `--menu FRAME:KEYS[:shot.png]` opens it at that frame and presses (u d l r a s), headless. A run that
 chooses "Quit game" this way ends there.
 
+**Pages.** A game may give the menu pages beyond its categories (`Game::pages`: a name, the page it is under, a
+line saying what it is): those with no parent head the first page, in a group of their own, and the others are
+reached from their parent's page, before its features. A category's features are on the page of its name. As in
+the other ports: "Alternative modes" with "Training mode" under it and "Dummy" under that (Fighting Vipers).
+
+**Reset game.** The menu's last group has Reset game above Quit and Resume: the port keeps a state taken before
+the game's first frame and goes back to it, so the game starts again as when it was switched on. The save memory
+is not part of a state, so the player's saves are as they were.
+
 ## Save states
 
 The whole game as it is between two frames, to a file and back (`runtime/state.h`: every part describes its
@@ -132,6 +141,38 @@ launcher would.
 and says when a training session is on (`Game::inTraining`). Outside one an aid reads as off (`FeatureOn`,
 `FeatureValue`), so a readout or a dummy left on does nothing in the game's other modes; the menu still
 shows, and `settings.ini` still keeps, what the player chose (`FeatureSetting`).
+
+**Save unlocks.** `Game::saveUnlocks` names a cheat, the game's save file and fields of it: with the cheat on,
+the backup library gives the game the file with those fields raised (bits set, or a count at least a value)
+and takes out again what it added when the game writes it, so the file kept stays the player's own. A field
+may name a second feature it needs on too (`SaveField::needs`): Fighting Vipers raises Pepsiman's bit only
+while he is in.
+
+**A second disc.** A game may read files from a second disc of the same game that the player has too
+(`--extra-disc PATH`): the game's file loading (`ReadDiscFile`) takes a file from the first disc, and from
+the second only when the first has none of that name. `game.cfg`'s `extra_disc_product` (the product number
+in its header) and `extra_disc_name` let the launcher find it beside the player's disc (in the same folder, or
+a folder in it), say so under the disc, and start the game with it. Only read, like the first. Fighting
+Vipers takes Pepsiman from its Japanese release this way.
+
+**A custom soundtrack.** The port's feature `custom_soundtrack` (the menu's Sound page; on in the Enhanced
+preset), for a game whose sources name its music (`Game::songs`: each audio track's name, as `vf2_akira`): the
+player's own music plays in place of the disc's tracks (`port/soundtrack.h`). It comes from a folder (the
+launcher's game page chooses it, `--soundtrack DIR`; none: `soundtrack` beside `settings.ini`), one file a song,
+named after the song or its track's number, as Ogg Vorbis, FLAC, MP3 or WAV; the game writes the names into the
+folder as `songs.txt` (`--list-songs` prints them). `soundtrack.ini` there can name a file for a song, its loop,
+its volume, or a track of another disc image the player has (`disc = ...`, `track = N`). A game may list other
+discs with some of its music (`Game::songDiscs`: a disc's product number and which of its tracks are which of
+the game's): naming such a disc is all it takes. Fighters Megamix takes the Vipers' stage music, full length,
+from Fighting Vipers' discs this way.
+
+The music goes where the disc's would, into the sound chip's CD audio input (`runtime/music.h`, `Replacement`),
+so the game's volume, fades and effects apply to it. The game sees its own track play as before (its length,
+where it is), and its memory stays the same as without it, so save states, run-ahead and the checks are not
+touched; only the sound differs. A song repeats when the game repeats its track and is played once when the
+game plays it once, and a song longer than the track plays on to its end unless the game asks for other music
+first. A file is read on a thread of its own from the moment its song is asked for (the samples of the last
+three songs kept in memory), changed to the CD's rate on the way.
 
 **Widescreen in the menu.** The port's feature `widescreen` (the menu's Display page; GPU renderer only)
 switches the wide picture while playing, from the next frame. Its switch is the launcher's own (on its
@@ -282,7 +323,9 @@ renderer; with the GPU renderer as one picture of at most 720 lines that the GPU
 
 The launcher's switch (`--widescreen`), or the menu's Display page while playing (above). See docs/VIDEO.md. What of a game's 2D display belongs at the picture's edges is the game's knowledge too
 (`Game::wideSplits`; Fighting Vipers: `games/fighting_vipers/src/widescreen.cpp`, the gauges and names move
-out to the edges, the timer and messages stay in the middle).
+out to the edges, the timer and messages stay in the middle). A game says frame by frame whether its splits
+apply (`Game::wideSplitsOn`): the same rows of the same layer hold other screens too (Fighting Vipers' character
+select, its training display), which the splits would cut apart.
 
 ## The Display page
 
