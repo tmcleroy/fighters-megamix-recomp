@@ -3,6 +3,7 @@
 // satrecomp port entry point: sets up the Saturn hardware, attaches the recompiled game code and runs it,
 // either in a window (frontend_sdl.cpp) or headless for tests and tools.
 #include "hud.h"
+#include "pictures.h"
 #include "port.h"
 
 #include "png_write.h"
@@ -194,6 +195,37 @@ static bool ReadFile(const std::string &path, std::vector<uint8_t> &out) {
     return true;
 }
 
+// The disc's files for the game's native file loading: the player's disc, and then a second disc of the game
+// (--extra-disc) for the files that are not on the first (Fighting Vipers' Japanese disc carries a character that
+// the American one does not). Only read, as the first. A second disc that cannot be read is said and left out.
+// Widescreen: the game's splits for the frame about to run (Game::wideSplitsOn)
+void Port::SetWideSplitsOn() {
+    if (videoRenderer) {
+        videoRenderer->SetWideSplitsOn(!satrecomp::TheGame().wideSplitsOn || satrecomp::TheGame().wideSplitsOn());
+    }
+}
+
+bool Port::OpenDiscFiles() {
+    if (!discFiles.Open(opt.discPath)) {
+        fprintf(stderr, "Cannot read '%s' as a Saturn disc image\n", opt.discPath.c_str());
+        return false;
+    }
+    haveExtraDisc = !opt.extraDiscPath.empty() && extraDiscFiles.Open(opt.extraDiscPath);
+    if (!opt.extraDiscPath.empty() && !haveExtraDisc) {
+        fprintf(stderr, "Cannot read '%s' as a Saturn disc image (the second disc); going on without it\n", opt.extraDiscPath.c_str());
+    }
+    satrecomp::SetDiscFileReader([this](const std::string &name, std::vector<uint8_t> &data) {
+        return discFiles.Read(name, data) || (haveExtraDisc && extraDiscFiles.Read(name, data));
+    });
+    satrecomp::SetExtraDiscFileReader([this](const std::string &name, std::vector<uint8_t> &data) {
+        return haveExtraDisc && extraDiscFiles.Read(name, data);
+    });
+    satrecomp::SetDiscFileLister([this](bool extra) {
+        return extra ? (haveExtraDisc ? extraDiscFiles.Names() : std::vector<std::string>{}) : discFiles.Names();
+    });
+    return true;
+}
+
 #ifndef SATRECOMP_OWN_MACHINE
 // Debugging aid (SATRECOMP_CD_TRACE=1): every CD block command and its response, with the frame number
 struct CDTracer final : ymir::debug::ICDBlockTracer {
@@ -243,16 +275,13 @@ bool Port::Init() {
     sat.configuration.NotifyObservers();
 
     // The disc's files, for starting it and for the game's native file loading
-    if (!discFiles.Open(opt.discPath)) {
-        fprintf(stderr, "Cannot read '%s' as a Saturn disc image\n", opt.discPath.c_str());
+    if (!OpenDiscFiles()) {
         return false;
     }
     satrecomp::music::SetDisc({[this](int track) { return discFiles.AudioSectors(track); },
                                [this](int track, uint32_t sector, uint8_t *out) { return discFiles.ReadAudioSector(track, sector, out); }});
     satrecomp::SetDiscSectorReader([this](uint32_t frameAddress, uint8_t *out) { return discFiles.ReadDataSector(frameAddress, out); });
     satrecomp::SetPadReader([this](int player) { return static_cast<uint16_t>(pad[player & 1].load() & 0xFFF8); });
-    satrecomp::SetDiscFileReader(
-        [this](const std::string &name, std::vector<uint8_t> &data) { return discFiles.Read(name, data); });
 
     if (!opt.biosPath.empty()) {
         std::vector<uint8_t> bios;
@@ -501,16 +530,13 @@ bool Port::Init() {
     satrecomp::LoadFeatures(opt.settingsPath, opt.features + (opt.aspect > 1.34f ? ",widescreen" : ",-widescreen"));
 
     // The disc's files, for starting it and for the game's native file loading
-    if (!discFiles.Open(opt.discPath)) {
-        fprintf(stderr, "Cannot read '%s' as a Saturn disc image\n", opt.discPath.c_str());
+    if (!OpenDiscFiles()) {
         return false;
     }
     satrecomp::music::SetDisc({[this](int track) { return discFiles.AudioSectors(track); },
                                [this](int track, uint32_t sector, uint8_t *out) { return discFiles.ReadAudioSector(track, sector, out); }});
     satrecomp::SetDiscSectorReader([this](uint32_t frameAddress, uint8_t *out) { return discFiles.ReadDataSector(frameAddress, out); });
     satrecomp::SetPadReader([this](int player) { return static_cast<uint16_t>(pad[player & 1].load() & 0xFFF8); });
-    satrecomp::SetDiscFileReader(
-        [this](const std::string &name, std::vector<uint8_t> &data) { return discFiles.Read(name, data); });
     {
         // (what the CD drive's table of contents says)
         satrecomp::machine::Disc disc;
@@ -767,6 +793,13 @@ void Port::RunFrame() {
         }
         menu.Close();
     }
+    // (tests: --export-pictures FRAME[:FOLDER])
+    if (!exportTest.empty() && strtoull(exportTest.c_str(), nullptr, 10) == frame) {
+        const size_t colon = exportTest.find(':');
+        std::string error;
+        const int written = ExportPictures(colon == std::string::npos ? PicturesFolder() : exportTest.substr(colon + 1), error);
+        fprintf(stderr, "export pictures: %s\n", written < 0 ? error.c_str() : (std::to_string(written) + " written").c_str());
+    }
     // (tests: --reset-test SET:GO)
     if (!resetTest.empty()) {
         std::string error;
@@ -795,6 +828,12 @@ void Port::RunFrame() {
     if (gpu && satrecomp::FeatureOn("widescreen") != wideShown) {
         ApplyWidescreen(!wideShown);
     }
+#ifdef SATRECOMP_OWN_MACHINE
+    if (frame == 0 && powerOn.empty()) {
+        SaveStateData(powerOn);
+    }
+#endif
+    SetWideSplitsOn();
     saturn->RunFrame();
     frame++;
     if (satrecomp::TheGame().frame) {
@@ -849,12 +888,30 @@ void Port::MenuAct(Menu::Action action) {
         menu.Close();
         return;
     }
+    if (action == Menu::Action::ExportPictures || action == Menu::Action::ShowPictures) {
+        // (the menu stays open, its note saying what happened and where)
+        const std::string folder = PicturesFolder();
+        std::string error;
+        if (action == Menu::Action::ShowPictures) {
+            std::error_code fault;
+            std::filesystem::create_directories(folder, fault);
+            if (openFolder) {
+                openFolder(folder);
+            }
+            menu.Note("Opened " + folder);
+            return;
+        }
+        const int written = ExportPictures(folder, error);
+        menu.Note(written < 0 ? error : "Wrote " + std::to_string(written) + " pictures to " + folder);
+        return;
+    }
     std::string error;
     const std::string path = StatePath(menu.Slot());
     const bool ok = action == Menu::Action::Save             ? SaveState(path, error)
                     : action == Menu::Action::Load           ? LoadState(path, error)
                     : action == Menu::Action::SetResetPoint  ? SetResetPoint(error)
-                                                             : GoToResetPoint(error);
+                    : action == Menu::Action::GoToResetPoint ? GoToResetPoint(error)
+                                                             : ResetGame(error);
     if (ok) {
         menu.Close();
     } else {
@@ -922,6 +979,7 @@ void Port::RunAhead() {
     }
     satrecomp::SetRunningAhead(true); // (no sound comes out of them: Init, onSample)
     for (int n = 0; n < ahead; n++) {
+        SetWideSplitsOn();
         saturn->RunFrame();
         if (satrecomp::TheGame().frame) {
             satrecomp::TheGame().frame();
@@ -967,6 +1025,13 @@ void Port::SaveStateData(std::vector<uint8_t> &data) {
 bool Port::SetResetPoint(std::string &) {
     SaveStateData(resetPoint);
     return true;
+}
+bool Port::ResetGame(std::string &error) {
+    if (powerOn.empty()) {
+        error = "The game cannot be reset yet.";
+        return false;
+    }
+    return LoadStateData(powerOn, error);
 }
 bool Port::GoToResetPoint(std::string &error) {
     if (resetPoint.empty()) {
@@ -1049,6 +1114,10 @@ bool Port::SetResetPoint(std::string &error) {
     return false;
 }
 bool Port::GoToResetPoint(std::string &error) {
+    error = "The reference build has no save states.";
+    return false;
+}
+bool Port::ResetGame(std::string &error) {
     error = "The reference build has no save states.";
     return false;
 }
@@ -1252,6 +1321,7 @@ static void Usage(const char *argv0) {
     fprintf(stderr,
             "Usage: %s --disc GAME.cue [options]\n"
             "  --bios BIOS.bin        start through a Saturn BIOS image instead of the native BIOS\n"
+            "  --extra-disc GAME.cue  another disc of the game: files not on --disc are read from it\n"
             "  --backup PATH          internal backup memory image (saves)\n"
             "  --cpu MODE             native (default) | free | recomp | interp | pure\n"
             "                         native: satrecomp's own translation of the game code, free running\n"
@@ -1259,6 +1329,7 @@ static void Usage(const char *argv0) {
             "                         recomp: cycle-exact recompiled blocks (the interpreter's handlers)\n"
             "                         interp: the interpreter by blocks (exact reference for recomp)\n"
             "                         pure:   the unmodified interpreter, instruction by instruction\n"
+            "  --export-pictures FRAME[:FOLDER]  write the game's pictures (the menu's Export pictures) at that frame\n"
             "  --dump-decode PATH     write the SH-2 opcode decode table (used by tools/recomp.py) and exit\n"
             "  --record-blocks PATH   add every newly reached code block to this block database\n"
             "  --features A,B         enable optional features (--list-features lists them; -NAME: off)\n"
@@ -1298,6 +1369,8 @@ int main(int argc, char **argv) {
             o.biosPath = next();
         } else if (a == "--disc") {
             o.discPath = next();
+        } else if (a == "--extra-disc") {
+            o.extraDiscPath = next();
         } else if (a == "--backup") {
             o.backupPath = next();
         } else if (a == "--cpu") {
@@ -1326,6 +1399,8 @@ int main(int argc, char **argv) {
             o.recordBlocks = next();
         } else if (a == "--reset-test") {
             p.resetTest = next();
+        } else if (a == "--export-pictures") {
+            p.exportTest = next();
         } else if (a == "--features") {
             o.features = next();
         } else if (a == "--fullscreen") {

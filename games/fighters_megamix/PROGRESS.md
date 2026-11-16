@@ -114,3 +114,18 @@ Two toolkit faults, both in satrecomp PR 9:
 - `SATRECOMP_CD_TRACE=1` lists the drive's commands on the own machine too.
 - The reference build (`make setup SATRECOMP_REFERENCE=...`, `make ref`) with
   `--bios <image> --cpu interp` and `SATRECOMP_NO_LIFTS=1` is the original game, cycle exact.
+
+## Export pictures and the Japanese disc (2026-11-16)
+
+Compared with the Japanese release (GS-9126 V1.001, Redump "Fighters Megamix (Japan)"): the same roster and the same
+CD music except track 42 (Rent-A-Hero's theme: the Japanese one has a centred layer, its vocals; the American its
+backing); FMM_DATA.DAT is laid out differently (blocks moved), and four of the 30 ending pictures were changed for
+the American release (11 Honey's "Taste of Honey", 17, 18 Rent-A-Hero's with the credit for the sung theme, 22
+Dural's); the American program calls Honey "CANDY"; the Japanese disc alone has OMAKE___.LZH (13 bonus pictures,
+1024x768 JPEG) and READ__ME.DOC (the staff's notes). About 1,000 more blocks of FMM_DATA differ, not looked into.
+
+src/pictures.cpp: the endings' pictures from the table of (blocks, first block) word pairs in 1ST_READ.DAT
+(0x06081C46: the run of 112-block entries; American from block 10070, Japanese from 9670), each 512x224 16-bit
+with the picture in the left 352; the Japanese ones that differ as "-japan"; the LZH archive's files (src/lzh.cpp:
+-lh0-/-lh5-, CRC-16 checked) as they are. 30 from the American disc, 47 with both. game.cfg names the Japanese disc
+(extra_disc_product), so the launcher finds it beside the American one.

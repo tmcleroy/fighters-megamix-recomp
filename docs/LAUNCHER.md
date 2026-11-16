@@ -80,3 +80,12 @@ Delete it to start over. Your disc image is only ever read.
 The first time, if your user folder already has them, the launcher offers to copy them over; nothing is taken from
 your user folder. Take `portable.txt` away and the launcher uses your user folder again; nothing is moved either way.
 The folder has to be one you can write to, or the launcher says so.
+
+## Exporting the pictures
+
+**Export pictures** (in the in-game menu, **Game → Pictures**) writes the game's ending pictures as JPEG files (352 by 224, as the Saturn
+shows them). With your Japanese disc image (Fighters Megamix (Japan)) in the same folder as the American one, or a
+folder in it, it also writes the four ending pictures the American release changed, as they were (named `-japan`),
+and the Japanese disc's 13 bonus pictures (1024 by 768). They go to the `pictures` folder in your files: on a Mac
+`~/Library/Application Support/Fighters Megamix/pictures`, or wherever the launcher's Game page says under YOUR
+FILES (its **Show** button opens it). **Show pictures folder**, on the same page, opens it too.
