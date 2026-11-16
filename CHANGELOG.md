@@ -11,7 +11,7 @@
   (Fighters Megamix (Japan), found by the launcher) its four original ending pictures that the American release
   changed and the 13 bonus pictures from its OMAKE archive; to the pictures folder in your files, which Show pictures
   folder opens.
-- Toolkit at satrecomp 0662a60 (with both).
+- Toolkit at satrecomp 2ab6611.
 
 ## 0.1.0-beta.5
 
