@@ -4,6 +4,7 @@
 #include "menu.h"
 
 #include "game.h"
+#include "pictures.h"
 #include "port.h"
 
 #include <iterator>
@@ -12,7 +13,7 @@ namespace port {
 
 namespace {
     // The first page's own rows
-    enum { kSetResetPoint = 1, kGoToResetPoint };
+    enum { kSetResetPoint = 1, kGoToResetPoint, kResetGame, kExportPictures, kShowPictures };
 
     // The speeds, in hundredths
     const int kSpeeds[] = {100, 50, 25};
@@ -27,7 +28,19 @@ void Menu::Open(bool withStates) {
 void Menu::Configure(bool withStates) {
     m_configured = true;
     recomp::MenuConfig config;
-    // Three groups with a line between them: the save states, what the game offers, and leaving
+    // Groups with a line between them: the game's pages that head the menu (its Alternative modes), the save
+    // states, what the game offers, and leaving
+    std::vector<recomp::MenuRow> top;
+    for (const satrecomp::Page &page : satrecomp::TheGame().pages) {
+        // (pages that are ways of running the game: their rows do not count features that are on)
+        config.pages.push_back({page.name, page.parent, page.description, false});
+        if (!*page.parent) {
+            top.push_back({recomp::MenuRow::Page, 0, page.name});
+        }
+    }
+    if (!top.empty()) {
+        config.groups.push_back(std::move(top));
+    }
     if (withStates) {
         config.groups.push_back({{recomp::MenuRow::Save}, {recomp::MenuRow::Load}, {recomp::MenuRow::Slot}});
     }
@@ -38,7 +51,22 @@ void Menu::Configure(bool withStates) {
         config.groups.back().push_back({recomp::MenuRow::Action, kGoToResetPoint, "Go to reset point",
                                         "Goes back to the reset point (F3, or the right stick's click)."});
     }
-    config.groups.push_back({{recomp::MenuRow::Quit}, {recomp::MenuRow::Resume}});
+    if (satrecomp::TheGame().exportPictures) {
+        const std::string folder = PicturesFolder();
+        config.groups.back().push_back({recomp::MenuRow::Action, kExportPictures, "Export pictures",
+                                        "Writes the game's pictures (its gallery and the like) as JPEG files to " + folder +
+                                            " (the pictures folder in your files: the launcher's Game page, YOUR FILES, "
+                                            "Show). Files already there are written over."});
+        config.groups.back().push_back({recomp::MenuRow::Action, kShowPictures, "Show pictures folder",
+                                        "Opens " + folder + " (where Export pictures writes) in your file manager."});
+    }
+    config.groups.push_back({});
+    if (withStates) {
+        config.groups.back().push_back({recomp::MenuRow::Action, kResetGame, "Reset game",
+                                        "Starts the game again, as when it was switched on. Your saves are kept."});
+    }
+    config.groups.back().push_back({recomp::MenuRow::Quit});
+    config.groups.back().push_back({recomp::MenuRow::Resume});
     for (const satrecomp::Feature &feature : satrecomp::TheGame().features) {
         config.features.push_back({feature.category, feature.title, feature.description, {feature.choices.begin(), feature.choices.end()}});
     }
@@ -89,7 +117,14 @@ Menu::Action Menu::Press(unsigned buttons) {
     case recomp::Menu::Chosen::Save: return Action::Save;
     case recomp::Menu::Chosen::Load: return Action::Load;
     case recomp::Menu::Chosen::Quit: return Action::Quit;
-    case recomp::Menu::Chosen::Action: return chosen.id == kSetResetPoint ? Action::SetResetPoint : Action::GoToResetPoint;
+    case recomp::Menu::Chosen::Action:
+        switch (chosen.id) {
+        case kSetResetPoint: return Action::SetResetPoint;
+        case kGoToResetPoint: return Action::GoToResetPoint;
+        case kExportPictures: return Action::ExportPictures;
+        case kShowPictures: return Action::ShowPictures;
+        default: return Action::ResetGame;
+        }
     default: return Action::None;
     }
 }
