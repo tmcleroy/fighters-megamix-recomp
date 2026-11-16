@@ -2,12 +2,12 @@
 
 ## Unreleased
 
-- A custom soundtrack (the Features page, under Sound; issue #17): your own music files, named after the songs
-  the game lists in `songs.txt`, or tracks of another disc, play in place of the disc's short music. Naming
-  Fighting Vipers' disc (USA or Japan) in `soundtrack.ini` gives the nine Vipers stages their full-length music.
-  [docs/SOUNDTRACK.md](docs/SOUNDTRACK.md).
+- A custom soundtrack (the Features page, under Sound; issue #17): a *Fighting Vipers* or *Virtua Fighter 2* Saturn
+  disc image put in the soundtrack folder gives their stages their full-length music (the Vipers' nine, VF2's
+  twelve, as the arcade game has them); your own music files, named after the songs, play in place of any.
+  `songs.txt` in the folder says what plays for each song. [docs/SOUNDTRACK.md](docs/SOUNDTRACK.md).
 - Save states made by earlier versions can no longer be loaded (the toolkit's save states now keep the music's place).
-- Toolkit at satrecomp 50e4636.
+- Toolkit at satrecomp 198fa0a.
 
 ## 0.1.0-beta.5
 

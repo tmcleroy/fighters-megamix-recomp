@@ -162,9 +162,12 @@ launcher's game page chooses it, `--soundtrack DIR`; none: `soundtrack` beside `
 named after the song or its track's number, as Ogg Vorbis, FLAC, MP3 or WAV; the game writes the names into the
 folder as `songs.txt` (`--list-songs` prints them). `soundtrack.ini` there can name a file for a song, its loop,
 its volume, or a track of another disc image the player has (`disc = ...`, `track = N`). A game may list other
-discs with some of its music (`Game::songDiscs`: a disc's product number and which of its tracks are which of
-the game's): naming such a disc is all it takes. Fighters Megamix takes the Vipers' stage music, full length,
-from Fighting Vipers' discs this way.
+discs with some of its music (`Game::songDiscs`: a disc's product number, or its title where every release has
+the same tracks, and which of its tracks are which of the game's): such a disc image put in the folder (its .cue,
+or a folder with it) is found and used with nothing more. `songs.txt`, written at every start, says how, which
+discs were found, and what plays for each song; game.cfg's `soundtrack_discs` names the discs on the launcher's
+row. Fighters Megamix takes the Vipers' and Virtua Fighter 2's stage music, full length, from their discs this
+way.
 
 The music goes where the disc's would, into the sound chip's CD audio input (`runtime/music.h`, `Replacement`),
 so the game's volume, fades and effects apply to it. The game sees its own track play as before (its length,

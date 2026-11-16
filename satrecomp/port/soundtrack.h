@@ -27,6 +27,10 @@
 // or LOOPLENGTH, in samples). A song longer than the disc's track plays on to its end after the track would have
 // stopped, unless the game asks for other music first.
 //
+// Another game's disc the game knows (Game::songDiscs) needs no soundtrack.ini: its disc image (a .cue, in the folder or
+// a folder in it) is found by its product number, and plays for the songs it has. songs.txt, written at every start,
+// says how to give the game music, which discs were found, and what plays for each song.
+//
 // A file is read on a thread of its own, from its start, as soon as the game asks for its song (the samples kept
 // in memory, the last few songs' of them); the sound waits for it only in the moment the file is opened.
 #pragma once
@@ -51,12 +55,12 @@ public:
     // has music for.
     int Open(const std::string &folder);
     void Close();
-    // The game's songs, one a line, for songs.txt and --list-songs
+    // The game's songs, one a line (--list-songs)
     static std::string SongList();
 
     // (runtime/music.h, Replacement)
     bool Has(int track) const {
-        return on && track >= 0 && static_cast<size_t>(track) < m_byTrack.size() && m_byTrack[track] >= 0;
+        return on && Playing(track);
     }
     bool Sample(int track, uint64_t n, bool repeat, int16_t &left, int16_t &right);
 
@@ -77,8 +81,14 @@ private:
     std::map<int, std::shared_ptr<Samples>> m_loaded; // by song
     std::list<int> m_recent;                          // the songs loaded, the last used first
     std::map<std::string, std::unique_ptr<DiscImage>> m_discs;
+    std::vector<std::string> m_discsFound;              // (for songs.txt)
+    std::map<std::string, std::string> m_discNames;     // a known disc's name, by its path
     Samples *Load(int song);
     DiscImage *Disc(const std::string &path);
+    bool Playing(int track) const {
+        return track >= 0 && static_cast<size_t>(track) < m_byTrack.size() && m_byTrack[track] >= 0;
+    }
+    std::string Status() const;
 };
 
 } // namespace port

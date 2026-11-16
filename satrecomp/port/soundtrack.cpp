@@ -209,9 +209,6 @@ int Soundtrack::Open(const std::string &folder) {
     std::error_code error;
     const std::filesystem::path dir = TextPath(folder);
     std::filesystem::create_directories(dir, error);
-    if (!satrecomp::TheGame().songs.empty()) {
-        std::ofstream(dir / "songs.txt", std::ios::binary) << SongList();
-    }
     // The folder's sound files by their names without the ending, in small letters
     std::map<std::string, std::string> stems;
     for (std::filesystem::directory_iterator each(dir, error); !error && each != std::filesystem::directory_iterator(); each.increment(error)) {
@@ -227,17 +224,53 @@ int Soundtrack::Open(const std::string &folder) {
     };
     m_volume = ini[""].count("volume") ? std::clamp(atoi(ini[""]["volume"].c_str()), 0, 400) : 100;
     const std::string commonDisc = ini[""].count("disc") ? inFolder(ini[""]["disc"]) : "";
-    // (a disc the game knows the music of, by its product number: Game::songDiscs)
-    std::map<int, int> known;
+    // Discs the game knows the music of (Game::songDiscs), by their product numbers: each disc image (.cue) in the
+    // folder or a folder in it, and soundtrack.ini's disc
+    std::map<int, std::pair<std::string, int>> known; // this game's track: a disc, and its track
+    std::vector<std::string> cues;
     if (!commonDisc.empty()) {
-        if (const DiscImage *image = Disc(commonDisc)) {
-            uint8_t header[2048] = {};
-            const std::string product = image->ReadUserData(150, header) ? Trim(std::string(reinterpret_cast<char *>(header) + 0x20, 10)) : "";
-            for (const satrecomp::SongDisc &other : satrecomp::TheGame().songDiscs) {
-                if (product == other.product) {
-                    known.insert(other.tracks.begin(), other.tracks.end());
+        cues.push_back(commonDisc);
+    }
+    for (std::filesystem::recursive_directory_iterator each(
+             dir, std::filesystem::directory_options::skip_permission_denied | std::filesystem::directory_options::follow_directory_symlink, error);
+         !error && each != std::filesystem::recursive_directory_iterator(); each.increment(error)) {
+        if (each.depth() > 1) {
+            each.disable_recursion_pending();
+        }
+        if (Lower(PathText(each->path().extension())) == ".cue") {
+            cues.push_back(PathText(each->path()));
+        }
+    }
+    std::sort(cues.begin() + (commonDisc.empty() ? 0 : 1), cues.end());
+    m_discsFound.clear();
+    for (const std::string &cue : cues) {
+        const DiscImage *image = Disc(cue);
+        uint8_t header[2048] = {};
+        const bool read = image && image->ReadUserData(150, header);
+        const std::string product = read ? Trim(std::string(reinterpret_cast<char *>(header) + 0x20, 10)) : "";
+        const std::string title = read ? Trim(std::string(reinterpret_cast<char *>(header) + 0x60, 112)) : "";
+        const satrecomp::SongDisc *disc = nullptr;
+        for (const satrecomp::SongDisc &other : satrecomp::TheGame().songDiscs) {
+            if (other.product ? !product.empty() && product.rfind(other.product, 0) == 0 : other.title && title == other.title) {
+                disc = &other;
+            }
+        }
+        const std::string file = PathText(TextPath(cue).filename());
+        if (!image) {
+            m_discsFound.push_back(file + ": cannot be read as a disc image");
+        } else if (!disc) {
+            m_discsFound.push_back(file + ": not a disc this game knows the music of" + (product.empty() ? "" : " (" + product + ")") +
+                                   "; soundtrack.ini can still take its tracks by number");
+        } else {
+            m_discNames[cue] = disc->name;
+            int taken = 0;
+            for (const auto &[mine, theirs] : disc->tracks) {
+                if (known.emplace(mine, std::make_pair(cue, theirs)).second) {
+                    taken++;
                 }
             }
+            m_discsFound.push_back(file + ": " + disc->name + ", " +
+                                   (taken ? std::to_string(taken) + (taken == 1 ? " song" : " songs") : std::string("nothing more (its songs come from a disc above)")));
         }
     }
 
@@ -283,8 +316,8 @@ int Soundtrack::Open(const std::string &folder) {
             }
         }
         if (song.file.empty() && song.discTrack == 0 && known.count(track)) {
-            song.disc = commonDisc;
-            song.discTrack = known[track];
+            song.disc = known[track].first;
+            song.discTrack = known[track].second;
         }
         if (!song.disc.empty() && song.discTrack > 0) {
             const DiscImage *image = Disc(song.disc);
@@ -305,7 +338,61 @@ int Soundtrack::Open(const std::string &folder) {
         m_byTrack[track] = static_cast<int>(m_songs.size());
         m_songs.push_back(song);
     }
+    if (!satrecomp::TheGame().songs.empty()) {
+        std::ofstream(dir / "songs.txt", std::ios::binary) << Status();
+    }
     return static_cast<int>(m_songs.size());
+}
+
+// songs.txt: how to give the game music, the discs found, and what plays for each song now
+std::string Soundtrack::Status() const {
+    const satrecomp::Game &game = satrecomp::TheGame();
+    std::string text = "The music of this game, and what plays for each piece of it while the Custom soundtrack feature is on.\n"
+                       "(Written each time the game starts: change this folder, then start the game again to see it here.)\n\n"
+                       "To give a song your own music, put a file here named as its first column below, with .ogg, .flac, .mp3\n"
+                       "or .wav: for instance " +
+                       std::string(game.songs.empty() ? "selector" : game.songs[game.songs.size() * 3 / 4].name) + ".flac.\n";
+    if (!game.songDiscs.empty()) {
+        text += "\nTo take music from another game's disc, put its disc image here: the .cue file with its .bin files, or\n"
+                "the folder they are in. The game knows these discs' music:\n";
+        std::vector<std::string> said;
+        for (const satrecomp::SongDisc &disc : game.songDiscs) {
+            if (std::find(said.begin(), said.end(), disc.name) == said.end()) {
+                said.push_back(disc.name);
+                text += "  " + std::string(disc.name) + (disc.what ? std::string(": ") + disc.what : "") + "\n";
+            }
+        }
+        text += "A file of your own for a song goes before a disc's.\n";
+    }
+    text += "\nsoundtrack.ini in this folder can say more: another name for a song's file, its loop, its volume, or any\n"
+            "disc's track by number.\n\n";
+    text += "Discs found here:\n";
+    if (m_discsFound.empty()) {
+        text += "  (none)\n";
+    }
+    for (const std::string &line : m_discsFound) {
+        text += "  " + line + "\n";
+    }
+    text += "\n";
+    char line[512];
+    snprintf(line, sizeof(line), "%-16s %5s  %-34s %s\n", "song", "track", "what it is", "plays");
+    text += line;
+    for (const satrecomp::Song &song : game.songs) {
+        std::string plays = "the game's own";
+        if (Playing(song.track)) {
+            const Song &mine = m_songs[m_byTrack[song.track]];
+            if (!mine.disc.empty()) {
+                const auto name = m_discNames.find(mine.disc);
+                plays = (name != m_discNames.end() ? name->second : PathText(TextPath(mine.disc).filename())) + ", track " +
+                        std::to_string(mine.discTrack);
+            } else {
+                plays = PathText(TextPath(mine.file).filename());
+            }
+        }
+        snprintf(line, sizeof(line), "%-16s %5d  %-34s %s\n", song.name, song.track, song.title, plays.c_str());
+        text += line;
+    }
+    return text;
 }
 
 // A disc image named in soundtrack.ini, opened once (null: it cannot be read)

@@ -104,14 +104,26 @@ static void RegisterSongs() {
         {41, "rolling_start", "Rolling Start"},
         {42, "rent_a_hero", "Rent-A-Hero"},
     };
-    // Fighting Vipers' discs have the Vipers' stage music as recorded here, at full length (141-176 seconds; here
-    // 78-94): Megamix's tracks 11-19 are the US disc's 7-15 and the Japanese disc's 9-17, the same from the start
-    std::vector<std::pair<int, int>> us, japan;
+    // Other games' discs with some of this music, the same recordings at full length (found by cross-correlating
+    // the tracks, PROGRESS.md). Fighting Vipers' have the Vipers' stage music (141-176 seconds; here 78-94):
+    // Megamix's tracks 11-19 are the US disc's 7-15 and the Japanese disc's 9-17. Virtua Fighter 2's have the arcade
+    // game's stage music (138-217 seconds; here 79): Megamix's tracks 23-34 are its tracks 21-32, in another order,
+    // on every release of it (the tracks' lengths are the same).
+    std::vector<std::pair<int, int>> vipersUs, vipersJapan;
     for (int track = 11; track <= 19; track++) {
-        us.push_back({track, track - 4});
-        japan.push_back({track, track - 2});
+        vipersUs.push_back({track, track - 4});
+        vipersJapan.push_back({track, track - 2});
     }
-    TheGame().songDiscs = {{"MK-81041", us}, {"GS-9101", japan}};
+    const std::vector<std::pair<int, int>> vf2 = {
+        {23, 28}, {24, 21}, {25, 32}, {26, 22}, {27, 23}, {28, 24}, // Lau, Sarah, Shun, Pai, Lion, Jeffry
+        {29, 25}, {30, 26}, {31, 29}, {32, 31}, {33, 27}, {34, 30}, // Kage, Jacky, Wolf, Akira, Dural, Chicago
+    };
+    const char *vipersWhat = "the Vipers' stage music at full length";
+    TheGame().songDiscs = {
+        {"MK-81041", nullptr, "Fighting Vipers (USA, Europe)", vipersWhat, vipersUs},
+        {"GS-9101", nullptr, "Fighting Vipers (Japan)", vipersWhat, vipersJapan},
+        {nullptr, "VIRTUA FIGHTER 2", "Virtua Fighter 2", "the Virtua Fighter 2 stages' arcade music at full length", vf2},
+    };
 }
 
 void RegisterGame() {

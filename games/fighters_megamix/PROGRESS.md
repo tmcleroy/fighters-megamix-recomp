@@ -101,6 +101,12 @@ of the file being loaded 0x060948F0, its error byte 0x060948F4; the peripheral l
   US disc's (MK-81041) tracks 7-15 and the Japanese disc's (GS-9101) 9-17, the same from the start (found by
   cross-correlating the tracks: 0.8-0.97 at the same offsets). Megamix's are cut at 78-94 seconds, the Vipers' run
   141-176.
+- Virtua Fighter 2's discs have the VF2 stages' arcade music, the same recordings at full length (138-217 s; here
+  79): Megamix 23-34 (Lau, Sarah, Shun, Pai, Lion, Jeffry, Kage, Jacky, Wolf, Akira, Dural, Chicago) are VF2 USA
+  (MK-81014) tracks 28, 21, 32, 22, 23, 24, 25, 26, 29, 31, 27, 30 (correlation 0.8-1.0; VF2's start about 2 s
+  sooner). Japan, Europe and Korea have the same track lengths (the archive's file sizes), so the disc is known by
+  its header's title. VF2's tracks 2-13 (77-100 s) matched nothing here (its own arrangements, by the look of it).
+  Megamix's VF1, VF3, Sonic, Kids and other tracks are on neither disc.
 - `SATRECOMP_LOG_MUSIC=1` prints every track asked for.
 
 ## Open problems

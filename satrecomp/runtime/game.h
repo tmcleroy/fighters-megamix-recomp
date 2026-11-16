@@ -82,10 +82,15 @@ struct Song {
 };
 
 // Another disc whose audio tracks hold some of the game's music (as recorded for another game, often longer): when
-// a custom soundtrack's soundtrack.ini names one (disc = ...), its tracks play for those songs, unless the folder has
-// music of its own for them
+// its disc image is in a custom soundtrack's folder (or soundtrack.ini names it: disc = ...), its tracks play for
+// those songs, unless the folder has music of its own for them
 struct SongDisc {
-    const char *product;                     // its product number, as its header gives it ("MK-81041")
+    // Which disc: by the product number its header gives ("MK-81041"; a disc whose number starts so), or, where
+    // every release has the same tracks, by the title there ("VIRTUA FIGHTER 2") with product nullptr
+    const char *product;
+    const char *title;
+    const char *name;                        // as the player knows it ("Fighting Vipers (USA)")
+    const char *what;                        // what music it gives (songs.txt; nullptr: nothing said)
     std::vector<std::pair<int, int>> tracks; // this game's track, and that disc's with the same music
 };
 
