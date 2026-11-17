@@ -19,7 +19,7 @@
 - Music carries on between rounds (an option on the Game page, on in the Enhanced preset): the stage's music
   plays through the whole fight instead of starting again at every round.
 - Reset game at the bottom of the in-game menu: the game starts again as when switched on; your saves are kept.
-- Toolkit at satrecomp 2ab6611.
+- Toolkit at satrecomp 67a5fd4.
 
 ## 0.1.0-beta.4
 
