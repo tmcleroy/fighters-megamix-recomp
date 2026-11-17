@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Export pictures writes PNG files instead of JPEG: each picture exactly as the Saturn shows it (the Japanese
+  disc's bonus pictures are still the JPEG files it holds). Pictures exported before stay as they were; export
+  again for the PNG files.
+
 ## 0.1.0-beta.5
 
 - A custom soundtrack (the Features page, under Sound; issue #17): a *Fighting Vipers* or *Virtua Fighter 2* Saturn
