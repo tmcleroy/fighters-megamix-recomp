@@ -121,6 +121,10 @@ struct Game {
     // Whether wideSplits apply to the frame about to run (the screen they were made for is up; a layer's same rows
     // on another screen hold something else). Not given: always.
     bool (*wideSplitsOn)() = nullptr;
+    // Whether the frame about to run is a screen laid out for 4:3 alone, shown in widescreen with black at the
+    // sides even where the game draws its 3D floor (a scene framed by its own borders, with whatever the scroll
+    // screens hold beyond them). Not given: never.
+    bool (*pillarbox)() = nullptr;
     void (*frame)() = nullptr;                                     // after every frame the game ran
     void (*state)(Archive &ar) = nullptr;                          // the game sources' own state, for save states
     // A training session is on (the game's own idea of one): the training aids (kFeatureTraining) work only
@@ -129,6 +133,9 @@ struct Game {
     // Not to run ahead now (the port's run-ahead): a moment whose workings a save state does not wholly
     // hold, so that frames run and taken back would change it. Not given: run-ahead whenever it is on.
     bool (*noRunAhead)() = nullptr;
+    // The game's free camera is on now and takes the look keys (Look): O is then its key, not the frame step's.
+    // Not given: never.
+    bool (*lookOn)() = nullptr;
 };
 // Filled in by RegisterGame (lift.h)
 Game &TheGame();
@@ -149,6 +156,9 @@ void SetFeatureValue(const char *name, int value);
 // What the player has chosen for a feature, whether it works now or not (the menu shows this; FeatureValue
 // gives 0 for a training aid outside a training session)
 int FeatureSetting(const char *name);
+// Every feature back as the launcher's default preset (Enhanced) has it, and settings.ini so (the menu's Reset all
+// options)
+void ResetFeatures();
 // The game's sources mark features of theirs as training aids (kFeatureTraining), by name
 void TrainingAids(std::initializer_list<const char *> names);
 // Run-ahead (the port's "run_ahead" feature) is running frames that will be taken back: the game's sources
