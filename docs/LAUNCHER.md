@@ -44,17 +44,20 @@ buttons pressed together, held as one. They have no key or button until you give
 
 | Key | What it does |
 | --- | --- |
-| **Esc**, **F1**, or the gamepad's Back button | Opens and closes the in-game menu |
+| **Esc**, **F1**; the gamepad's Guide button, its left stick's click, or Start and Back together | Opens and closes the in-game menu |
 | **F11** | Full screen |
 | **F5** / **F9** | Save / load a state in the slot; **F6** / **F7** the slot before and the next |
 | **F2** / **F3** | Set a reset point / go back to it (a gamepad's right stick's click does both) |
-| **F4** / **F8** | Pause / go on one frame |
-| **-** / **=** | Slower / faster: 100, 50 or 25 percent |
+| **P** (or **F4**) / **O** (or **F8**) | Pause / go on one frame |
+| **-** / **=** | Slower / faster: 1/8 to 8x |
+| **F12** | Screenshot, to `screenshots/` in your files |
 
-The **in-game menu** stops the game while it is open: save and load a state (nine slots), a page for each kind of
-feature, the speed, the reset point, and **Quit game**, which is how you leave (Esc only closes the menu). Up and
-down choose a row; A, B, C or Start change it or go into a page; left and right change a row with several values
-and leave a page.
+The **in-game menu** stops the game while it is open, laid out as in the other recomp ports: **Display**, **Game**
+(the speed, mute, Cheats, Sound, Pictures and the game's options), save and load a state (nine slots), the reset
+point, **Reset all options** (every option back to the Enhanced preset, and full speed), **Reset game** and **Quit
+game**, which is how you leave (Esc only closes the menu). Up and down choose a row (held, they go on); Enter or A
+changes it or goes into a page; Backspace or B goes back a page; left and right change a row with several values.
+The mouse works it too: point at a row, click, and the right button goes back.
 
 ## Updates
 

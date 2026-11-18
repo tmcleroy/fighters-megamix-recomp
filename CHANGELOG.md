@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- The in-game menu is laid out as in the other recomp ports: Display and Game first, Speed and Mute on the Game
+  page (with Cheats, Sound and Pictures under it), and a new **Reset all options** (every option back to the
+  Enhanced preset, and full speed). Speeds from 1/8 to 8x. The mouse works the menu; held arrows repeat;
+  the gamepad's Guide button opens it (Back alone no longer does; Start and Back together still do). **P** pauses
+  and **O** goes on a frame (F4 and F8 still do), **F12** saves a screenshot.
 - Export pictures writes PNG files instead of JPEG: each picture exactly as the Saturn shows it (the Japanese
   disc's bonus pictures are still the JPEG files it holds). Pictures exported before stay as they were; export
   again for the PNG files.
