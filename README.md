@@ -59,6 +59,7 @@ Download the file for your system from the [releases page](../../releases), then
 | Linux x86_64, SteamOS (Steam Deck, Steam Machine) | `FightersMegamix-linux-x86_64.tar.gz` | Unpack and run `fighters_megamix-launcher`. On SteamOS, do this in Desktop Mode, and use the launcher's **Add to Steam** to have it in Game Mode. |
 | Linux ARM64 (aarch64) | `FightersMegamix-linux-arm64.tar.gz` | Unpack and run `fighters_megamix-launcher`. |
 | Windows 10 or later, x64 | `FightersMegamix-windows-x64.zip` | Unzip and run `fighters_megamix-launcher.exe`. Windows warns about an unknown publisher the first time: choose **More info**, then **Run anyway**. |
+| Android 9 or later, ARM64 phones and tablets | `FightersMegamix-android.apk` | Open it on the phone and allow installing from where you opened it. In the app, choose the disc's .cue file and all its .bin files together: they are copied into the app's folder. |
 
 In the launcher, drop your disc image's `.cue` file on the window (or choose it), choose **Features** and
 **Controllers** as you like (or leave them), and **Play**. The launcher checks that the image is the release this
@@ -80,7 +81,7 @@ layout and every key.
 | --- | --- |
 | The game | Boot, title, mode select, character select and arcade fights (rounds, replay, continue, game over) run; the opening movie plays to its end and can be skipped. Seen in screenshots taken with no window, not yet played, heard or watched in a window by a person. |
 | Platforms | macOS (Apple silicon, and Intel under Rosetta), Linux x86_64 (also a Steam Machine on SteamOS) and Windows x64 (under Wine): the release downloads replay a recorded fight to the same state as the Mac. |
-| Android | ARM64 phones and tablets, Android 9 and later, with touch controls beside a gamepad's (`tools/release/android.sh`; no release download yet). The disc is chosen with Android's picker. Played in the Android emulator: menus and a fight with the touch controls at full speed; not yet on a phone, and not yet heard. |
+| Android | ARM64 phones and tablets, Android 9 and later, with touch controls beside a gamepad's. The disc is chosen with Android's picker. Played on a Pixel 9, widescreen included, and in the Android emulator. |
 
 [games/fighters_megamix/PROGRESS.md](games/fighters_megamix/PROGRESS.md) says what is native, what is known about
 the game, and what is still open; [docs/ROADMAP.md](docs/ROADMAP.md) has what is planned.
